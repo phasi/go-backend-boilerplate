@@ -55,8 +55,8 @@ The server will start on `http://localhost:8080`
 ├── main.go           # Application entry point and server setup
 ├── routerv1.go       # V1 API routes and handlers
 ├── healthcheck.go    # Health check endpoint
-├── models.go         # Data models and structures
-├── permissions.go    # Permission and authorization logic
+├── models.go         # Define your models
+├── permissions.go    # Define your permissions
 ├── go.mod           # Go module dependencies
 └── go.sum           # Dependency checksums
 ```
@@ -71,7 +71,9 @@ The server will start on `http://localhost:8080`
 
 Base path: `/api/v1`
 
-- Example user endpoints (customize as needed)
+Contains already:
+
+- Example endpoints (customize as needed)
 - Authentication middleware enabled for protected routes
 - CORS configured for `http://localhost:3000`
 
@@ -90,8 +92,9 @@ CORS is configured in `routerv1.go` with the following default settings:
 ### Logging
 
 - Configurable log levels (INFO, DEBUG, etc.)
-- HTTP request logging with trace IDs
+- HTTP request logging with trace IDs (for logging analytics)
 - Header redaction for sensitive information (Authorization headers)
+- Log format is JSON
 
 ### Authentication
 
@@ -99,30 +102,123 @@ Basic authentication middleware is included as a starting point. Customize the t
 
 ## Database Integration
 
-For database operations, consider using a PostgreSQL ORM library:
-**[github.com/phasi/go-postgresql-orm](https://github.com/phasi/go-postgresql-orm)** - A simple and efficient PostgreSQL ORM for Go applications.
+For database operations, here's a suggestion:
+**[github.com/phasi/go-postgresql-orm](https://github.com/phasi/go-postgresql-orm)** - A simple PostgreSQL ORM.
 
 ## Development
 
 ### Adding New Routes
 
-1. Create handlers in the appropriate router file
-2. Add route definitions to the router
-3. Apply necessary middleware (authentication, etc.)
+1. Create handlers in the appropriate router file, _example_:
+
+```go
+    // routerv1.go
+
+    func getRouterV1() *api.Router {
+
+	// Create router
+	router := &api.Router{
+		BasePath:   "/v1",
+	}
+
+	// Public routes (handlers)
+	router.HandleFunc("GET", "/users/:id", func(w http.ResponseWriter, r *http.Request, ctx *api.RouteContext) {
+		id, err := ctx.Params.Get("id")
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			http.Error(w, "User ID must be an integer", http.StatusBadRequest)
+			return
+		}
+		user := User{ID: idInt, Name: "John Doe", Email: "john@example.com"}
+		api.WriteJSON(w, user)
+	})
+	// Protected routes (handlers)
+	router.HandleProtectedFunc("GET", "/admin/users",
+		[]api.Permission{PermissionViewUsers},
+		func(w http.ResponseWriter, r *http.Request, ctx *api.RouteContext) {
+			users := []User{
+				{ID: 1, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+			}
+			api.WriteJSON(w, users)
+		})
+    }
+```
+
+2. Apply necessary middleware (authentication, etc.)
+
+```go
+	// Set up authentication middleware
+	router.AuthorizationMiddleware = func(context *api.RouteContext, handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token := r.Header.Get("Authorization")
+			// change below token validation to your own logic
+			if token == "Bearer valid-token" {
+				context.SetUserId("user-123")
+				handler.ServeHTTP(w, r)
+			} else {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			}
+		})
+	}
+
+```
+
+```go
+
+	// Set up permission middleware
+	router.PermissionMiddleware = func(context *api.RouteContext, handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Mock user permissions (in real app, fetch from database/cache)
+			userPermissions := []api.Permission{PermissionViewUsers, PermissionEditUsers, PermissionAdmin}
+			if context.HasRequiredPermissions(userPermissions) {
+				handler.ServeHTTP(w, r)
+			} else {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+			}
+		})
+	}
+
+```
+
+Edit _permissions.go_ to add your permissions:
+
+```go
+
+package main
+
+import api "github.com/phasi/go-restapi"
+
+const (
+	PermissionViewUsers   api.Permission = 1
+	PermissionEditUsers   api.Permission = 2
+	PermissionDeleteUsers api.Permission = 3
+	PermissionAdmin       api.Permission = 10
+    // add more
+)
+
+
+```
 
 ### Extending the API
 
 - Add new router versions by creating additional router files
 - Register new routers in the `main.go` file's multi-router setup
-- Maintain backward compatibility for existing API versions
 
-## Contributing
+```go
+	// multirouter gathers all routers under a common base path
+	multiRouter, err := api.NewMultiRouter("/api", []*api.Router{routerV1, healthcheckRouter})
+	if err != nil {
+		logger.Fatal("Failed to create multi-router: %v", err)
+	}
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Maintain backward compatibility for existing API versions when using versioned routers. If you do not want to do so, you can also use a regular router and keep it simple.
 
 ## License
 
