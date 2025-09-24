@@ -1,0 +1,6 @@
+github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
+github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/phasi/go-logs v1.1.1 h1:uwhmDN/Fgkbi7kqjZtBI8IwoFBzT7Eci6S5iilad22o=
+github.com/phasi/go-logs v1.1.1/go.mod h1:BplXYtF0EHWzIxhURG+9GgWgC+W7m3GJQI+Q5xi3T3c=
+github.com/phasi/go-restapi v1.1.1 h1:ogQm8BK5G6aqnor2dFRVNJ/lk9h+y9pq0cYUMVYbyjI=
+github.com/phasi/go-restapi v1.1.1/go.mod h1:Ee5ojH/a2xcGMuIFbMtUKqe90B/yNOGi7pf+bRddFoo=
