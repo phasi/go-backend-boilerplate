@@ -31,7 +31,7 @@ This boilerplate leverages the following custom libraries:
 1. Clone this repository:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/phasi/go-backend-boilerplate.git
 cd go-backend-boilerplate
 ```
 
