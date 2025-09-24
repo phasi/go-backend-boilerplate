@@ -65,7 +65,7 @@ The server will start on `http://localhost:8080`
 
 ### Health Check
 
-- `GET /api/health/` - Returns server status and timestamp
+- `GET /api/health` - Returns server status and timestamp
 
 ### V1 API Routes
 
