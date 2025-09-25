@@ -29,13 +29,7 @@ func main() {
 	// Set up logging
 	api.SetRedactedHeaderNames([]string{"Authorization"})
 	logFunc := func(entry api.HttpLogEntry) {
-		logger.Info(
-			"%s %s %d (trace: %s)",
-			entry.Method,
-			entry.Path,
-			entry.Status,
-			entry.TraceID,
-		)
+		logger.Log(entry).Info()
 	}
 	// Apply middleware for logging and tracing
 	loggedRouter := api.LoggingRouter(multiRouter, logFunc)
