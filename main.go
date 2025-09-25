@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"os"
-	"strings"
 
 	gologs "github.com/phasi/go-logs"
 	api "github.com/phasi/go-restapi"
@@ -42,16 +41,9 @@ func main() {
 	loggedRouter := api.LoggingRouter(multiRouter, logFunc)
 	tracedRouter := api.TracingRouter(loggedRouter)
 	// Start server
+	logger.Info("Configured routes:")
+	logger.Log(multiRouter.ListRoutes()).Info()
 	logger.Info("Server starting on :8080")
-	logger.Debug("\n")
-	logger.Debug("List of available routes:")
-	for _, route := range multiRouter.ListRoutes() {
-		parts := strings.Split(route, " ")
-		if len(parts) != 2 {
-			continue
-		}
-		logger.Debug("%s\t http://%s%s%s\n", parts[0], "localhost", ":8080", parts[1])
-	}
 	err = http.ListenAndServe(":8080", tracedRouter)
 	if err != nil {
 		logger.Fatal("Server failed: %v", err)

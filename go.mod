@@ -1,7 +1,7 @@
 module go-backend-boilerplate
 
 require (
-	github.com/phasi/go-logs v1.1.1
+	github.com/phasi/go-logs v1.2.0
 	github.com/phasi/go-restapi v1.1.1
 )
 
